@@ -36,6 +36,11 @@
          ```
 ## MySQL 与 MacOS
    * 原来安装的Mysql备忘
+   
+      + 开机自动启动 - 停止脚本
+      ```bash
+         sudo launchctl stop com.oracle.oss.mysql.mysqld.plist 
+      ```
       + 开机启动 - 卸载脚本 参考：XMind文档：自动启动程序的方法
       ```bash
           sudo launchctl unload com.oracle.oss.mysql.mysqld.plist
