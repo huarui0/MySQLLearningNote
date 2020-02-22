@@ -34,3 +34,17 @@
          ```bash
              mysql -u root -p jira < D:\MySQLDataDmp\databases_jira.sql;
          ```
+## MySQL 与 MacOS
+   * 原来安装的Mysql备忘
+      + 开机启动 - 卸载脚本 参考：XMind文档：自动启动程序的方法
+      ```bash
+          sudo launchctl unload com.oracle.oss.mysql.mysqld.plist
+      ```
+      ```bash
+         # 永久卸载
+         sudo launchctl unload -w com.oracle.oss.mysql.mysqld.plist
+      ```
+      + 原启动脚本
+      ```bash
+          /usr/local/mysql/bin/mysqld --user=_mysql --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --plugin-dir=/usr/local/mysql/lib/plugin --log-error=/usr/local/mysql/data/mysqld.local.err --pid-file=/usr/local/mysql/data/mysqld.local.pid --keyring-file-data=/usr/local/mysql/keyring/keyring --early-plugin-load=keyring_file=keyring_file.so   
+     ```
