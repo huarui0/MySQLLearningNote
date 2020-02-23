@@ -39,32 +39,96 @@
 ## 数据库管理
    * 用户管理
       + 添加用户
+         - 方法 1
+         ```sql
+            6.3.3 Removing User Accounts
+
+            DROP USER 'root'@'%';
+
+            FLUSH PRIVILEGES;
+
+            13.7.1.1. CREATE USER Syntax
+
+            CREATE USER 'root'@'132.97.221.219' IDENTIFIED BY '!13YXmcq';
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'132.97.221.219'
+            WITH GRANT OPTION;
+
+            CREATE USER 'tool'@'132.97.221.219' IDENTIFIED BY 'tool123';
+            GRANT ALL PRIVILEGES ON *.* TO 'tool'@'132.97.221.219'
+            WITH GRANT OPTION;
+
+            CREATE USER 'tool'@'132.97.221.219' IDENTIFIED BY 'tool123';
+            GRANT ALL PRIVILEGES ON *.* TO 'tool'@'132.97.221.219'
+            WITH GRANT OPTION;
+
+
+
+            ------mysql 外网登陆。为何要两个啊（实际是转换成映射的电脑登陆），不用第一个的！！！
+            ---------------------------------------------------------------------
+            CREATE USER 'root'@'tomcat1.in.3322.org' IDENTIFIED BY 'root123Root';
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'tomcat1.in.3322.org' WITH GRANT OPTION;
+
+            CREATE USER 'root'@'192.168.0.12' IDENTIFIED BY 'root123';
+            GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.0.12' WITH GRANT OPTION;
+            ---------------------------------------------------------------------
+
+
+            mysql> CREATE USER 'monty'@'localhost' IDENTIFIED BY 'some_pass';
+            mysql> GRANT ALL PRIVILEGES ON *.* TO 'monty'@'localhost'
+            -> WITH GRANT OPTION;
+            mysql> CREATE USER 'monty'@'%' IDENTIFIED BY 'some_pass';
+            mysql> GRANT ALL PRIVILEGES ON *.* TO 'monty'@'%'
+            -> WITH GRANT OPTION;
+            mysql> CREATE USER 'admin'@'localhost';
+            mysql> GRANT RELOAD,PROCESS ON *.* TO 'admin'@'localhost';
+            mysql> CREATE USER 'dummy'@'localhost';
+
+            GRANT ALL PRIVILEGES ON *.* TO 'tool'@'%'
+
+
+            CREATE USER 'gd4g'@'%' IDENTIFIED BY 'gd4g123';
+
+            CREATE USER 'root'@'%' IDENTIFIED BY '!13YXmcq';
+
+            mysql -u root -p --socket=/tmp/mysql_3311.sock
+
+            UPDATE mysql.user SET Password = PASSWORD('root123') WHERE User = 'root';
+            FLUSH PRIVILEGES;
+
+            CREATE USER 'multi_admin'@'localhost' IDENTIFIED BY 'multi_admin123';
+            grant shutdown on *.* to multi_admin@localhost identified by 'multi_admin123' with grant option;
+            show grants for 'multi_admin'@'localhost';
+
+         
+         
+         
+         ```
       + 密码设置
          - 方法 1
          ```sql
-shell> mysql -u root
-mysql> SET PASSWORD FOR 'root'@'localhost' = PASSWORD('newpwd');
-mysql> SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('newpwd');
-mysql> SET PASSWORD FOR 'root'@'::1' = PASSWORD('newpwd');
-mysql> SET PASSWORD FOR 'root'@'%' = PASSWORD('newpwd');
+            shell> mysql -u root
+            mysql> SET PASSWORD FOR 'root'@'localhost' = PASSWORD('newpwd');
+            mysql> SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('newpwd');
+            mysql> SET PASSWORD FOR 'root'@'::1' = PASSWORD('newpwd');
+            mysql> SET PASSWORD FOR 'root'@'%' = PASSWORD('newpwd');
 
 
          ```
          - 方法 2
          ```sql
 
-shell> mysql -u root
-mysql> UPDATE mysql.user SET Password = PASSWORD('newpwd') WHERE User = 'root';
-mysql> FLUSH PRIVILEGES;
+            shell> mysql -u root
+            mysql> UPDATE mysql.user SET Password = PASSWORD('newpwd') WHERE User = 'root';
+            mysql> FLUSH PRIVILEGES;
 
          ```
          - 方法 3
          ```sql
-shell> mysqladmin -u root password "newpwd" -- mysqladmin: [Warning] Using a password on the command line interface can be inse
-cure.
-shell> mysqladmin -u root -h host_name password "newpwd"
-         
-         
+            shell> mysqladmin -u root password "newpwd" -- mysqladmin: [Warning] Using a password on the command line interface can be inse
+            cure.
+            shell> mysqladmin -u root -h host_name password "newpwd"
+
+
          
          ```
 ## 数据库操作
