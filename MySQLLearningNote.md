@@ -133,6 +133,35 @@
 
          
          ```
+   * 数据库的启动与停止
+      + 数据库的启动
+         - 方法 1 -- 操作系统级别 （Linux） - 需要设置 path 等
+         ```bash
+             shell> systemctl start mysqld
+         ```
+         
+         - 方法 2 - 数据库级别
+         ```bash
+             # 安全模式
+             shell> bin/mysqld_safe --user=mysql &
+             # Starting with--basedir&--datadir option
+             shell> bin/mysqld_safe --user=mysql --basedir=... -datadir = ...
+             # 注：需要
+             # in my.cnf add：
+              [mysqld]
+              user=user_name
+         ```
+         - 方法 3 - 使用MySQL Server Startup Script 启动
+         ```bash
+             shell> mysql.server start
+             shell> mysql.server stop
+         ```
+      + 数据库的停止
+         - 方法 3 --强制停止 - （Linux） 
+         ```bash
+            ps -ef |grep mysqld
+            kill -9 pid
+         ```
 ## 数据库操作
    * 创建数据库
       + 创建脚本
