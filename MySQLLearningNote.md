@@ -36,6 +36,37 @@
          ```bash
              mysql -u root -p jira < D:\MySQLDataDmp\databases_jira.sql;
          ```
+## 数据库管理
+   * 用户管理
+      + 添加用户
+      + 密码设置
+         - 方法 1
+         ```sql
+shell> mysql -u root
+mysql> SET PASSWORD FOR 'root'@'localhost' = PASSWORD('newpwd');
+mysql> SET PASSWORD FOR 'root'@'127.0.0.1' = PASSWORD('newpwd');
+mysql> SET PASSWORD FOR 'root'@'::1' = PASSWORD('newpwd');
+mysql> SET PASSWORD FOR 'root'@'%' = PASSWORD('newpwd');
+
+
+         ```
+         - 方法 2
+         ```sql
+
+shell> mysql -u root
+mysql> UPDATE mysql.user SET Password = PASSWORD('newpwd') WHERE User = 'root';
+mysql> FLUSH PRIVILEGES;
+
+         ```
+         - 方法 3
+         ```sql
+shell> mysqladmin -u root password "newpwd" -- mysqladmin: [Warning] Using a password on the command line interface can be inse
+cure.
+shell> mysqladmin -u root -h host_name password "newpwd"
+         
+         
+         
+         ```
 ## 数据库操作
    * 创建数据库
       + 创建脚本
