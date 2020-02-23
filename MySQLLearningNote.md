@@ -48,8 +48,9 @@
             FLUSH PRIVILEGES;
 
             13.7.1.1. CREATE USER Syntax
-
+            # 创建用户
             CREATE USER 'root'@'132.97.221.219' IDENTIFIED BY '!13YXmcq';
+            # 赋予权限
             GRANT ALL PRIVILEGES ON *.* TO 'root'@'132.97.221.219'
             WITH GRANT OPTION;
 
