@@ -162,7 +162,15 @@
          ```
       + 数据库的停止
          - 方法 1 --操作系统
-         - 方法 2 -- 
+         - 方法 2 -- 数据库级别
+         ```bash
+             # 方法 1
+	           # 命令行模式
+             # You can stop the MySQL server by executing this command:
+             shell> bin/mysqladmin -u root shutdown
+             mysqladmin -u root -p shutdown
+             mysqladmin -u root -p shutdown --socket=/tmp/mysql.sock
+         ```
          - 方法 3 --强制停止 - （Linux） 
          ```bash
             ps -ef |grep mysqld
