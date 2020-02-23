@@ -37,6 +37,7 @@
              mysql -u root -p jira < D:\MySQLDataDmp\databases_jira.sql;
          ```
 ## 数据库管理
+   * 权限与角色管理（Using Roles）
    * 用户管理
       + 添加用户
          - 方法 1
