@@ -42,6 +42,11 @@
       ```sql
           CREATE database testdb
       ```
+      + 执行脚本方式
+         - 方法 1
+            * dadfadfa
+         - 方法 2
+            * dfadfafa
    * 创建表
    * 创建索引
 ## MySQL 与 MacOS
