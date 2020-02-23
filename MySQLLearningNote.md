@@ -36,6 +36,14 @@
          ```bash
              mysql -u root -p jira < D:\MySQLDataDmp\databases_jira.sql;
          ```
+## 数据库操作
+   * 创建数据库
+      + 创建脚本
+      ```sql
+          CREATE database testdb
+      ```
+   * 创建表
+   * 创建索引
 ## MySQL 与 MacOS
    * 原来安装的Mysql备忘
    
