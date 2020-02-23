@@ -1,7 +1,9 @@
 # MySQL Learning Note
 
 ## 安装与配置
-
+   * 官网参考
+   * 参考
+      + :heavy-check-:[INsteafdafafd](http:\\fdafafa)<br>
 
 
 
