@@ -142,6 +142,10 @@
          
          - 方法 2 - 数据库级别
          ```bash
+             # console 模式
+                mysqld --console
+             # console 加 datadir=...
+                mysqld --datadir= ...
              # 安全模式
              shell> bin/mysqld_safe --user=mysql &
              # Starting with--basedir&--datadir option
@@ -157,6 +161,8 @@
              shell> mysql.server stop
          ```
       + 数据库的停止
+         - 方法 1 --操作系统
+         - 方法 2 -- 
          - 方法 3 --强制停止 - （Linux） 
          ```bash
             ps -ef |grep mysqld
