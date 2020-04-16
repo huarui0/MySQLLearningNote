@@ -1,0 +1,408 @@
+http://www.cnblogs.com/suredandan/p/3630440.html
+
+1.初始化数据库
+
+在$mysql_base目录下，新增加存放data的文件夹，用mysql_install_db命令执行初始化
+
+复制代码
+[root@ora11g scripts]# ./mysql_install_db --help | less
+Usage: ./mysql_install_db [OPTIONS]
+  --basedir=path       The path to the MySQL installation directory.
+  --builddir=path      If using --srcdir with out-of-directory builds, you
+                       will need to set this to the location of the build
+                       directory where built files reside.
+  --cross-bootstrap    For internal use.  Used when building the MySQL system
+                       tables on a different host than the target.
+  --datadir=path       The path to the MySQL data directory.
+  --defaults-extra-file=name
+                       Read this file after the global files are read.
+  --defaults-file=name Only read default options from the given file name.
+  --force              Causes mysql_install_db to run even if DNS does not
+                       work.  In that case, grant table entries that normally
+                       use hostnames will use IP addresses.
+  --help               Display this help and exit.                     
+  --ldata=path         The path to the MySQL data directory. Same as --datadir.
+  --no-defaults        Don't read default options from any option file.
+  --rpm                For internal use.  This option is used by RPM files
+                       during the MySQL installation process.
+  --skip-name-resolve  Use IP addresses rather than hostnames when creating
+                       grant table entries.  This option can be useful if
+                       your DNS does not work.
+  --srcdir=path        The path to the MySQL source directory.  This option
+                       uses the compiled binaries and support files within the
+                       source tree, useful for if you don't want to install
+                       MySQL yet and just want to create the system tables.
+  --user=user_name     The login username to use for running mysqld.  Files
+                       and directories created by mysqld will be owned by this
+                       user.  You must be root to use this option.  By default
+                       mysqld runs using your current login name and files and
+                       directories that it creates will be owned by you.
+
+All other options are passed to the mysqld program
+复制代码
+复制代码
+[root@ora11g scripts]# ./mysql_install_db --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data2 --user=mysql 
+Installing MySQL system tables...
+OK
+Filling help tables...
+OK
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL root USER !
+To do so, start the server, then issue the following commands:
+
+/usr/local/mysql/bin/mysqladmin -u root password 'new-password'
+/usr/local/mysql/bin/mysqladmin -u root -h ora11g password 'new-password'
+
+Alternatively you can run:
+/usr/local/mysql/bin/mysql_secure_installation
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the manual for more instructions.
+
+You can start the MySQL daemon with:
+cd /usr/local/mysql ; /usr/local/mysql/bin/mysqld_safe &
+
+You can test the MySQL daemon with mysql-test-run.pl
+cd /usr/local/mysql/mysql-test ; perl mysql-test-run.pl
+
+Please report any problems at http://bugs.mysql.com/
+
+[root@ora11g scripts]# 
+复制代码
+ 同样，再初始化一个data3
+
+ 
+
+修改my.cnf的配置，添加上multi的相关属性，如果不是很清楚需要添加什么的话，可以参考mult给的例子
+
+复制代码
+[root@ora11g ~]# mysqld_multi --example
+
+[mysqld_multi]
+mysqld     = /usr/local/mysql/bin/mysqld_safe
+mysqladmin = /usr/local/mysql/bin/mysqladmin
+user       = multi_admin
+password   = my_password
+
+[mysqld2]
+socket     = /tmp/mysql.sock2
+port       = 3307
+pid-file   = /usr/local/mysql/mysqldata2/hostname.pid2
+datadir    = /usr/local/mysql/mysqldata2
+language   = /usr/local/mysql/share/mysql/english
+user       = unix_user1
+
+[mysqld3]
+mysqld     = /path/to/mysqld_safe
+ledir      = /path/to/mysqld-binary/
+mysqladmin = /path/to/mysqladmin
+socket     = /tmp/mysql.sock3
+port       = 3308
+pid-file   = /usr/local/mysql/mysqldata3/hostname.pid3
+datadir    = /usr/local/mysql/mysqldata3
+language   = /usr/local/mysql/share/mysql/swedish
+user       = unix_user2
+
+[mysqld4]
+socket     = /tmp/mysql.sock4
+port       = 3309
+pid-file   = /usr/local/mysql/mysqldata4/hostname.pid4
+datadir    = /usr/local/mysql/mysqldata4
+language   = /usr/local/mysql/share/mysql/estonia
+user       = unix_user3
+ 
+[mysqld6]
+socket     = /tmp/mysql.sock6
+port       = 3311
+pid-file   = /usr/local/mysql/mysqldata6/hostname.pid6
+datadir    = /usr/local/mysql/mysqldata6
+language   = /usr/local/mysql/share/mysql/japanese
+user       = unix_user4
+[root@ora11g ~]# 
+复制代码
+我的相关配置如下：
+
+复制代码
+[mysqld_multi]
+mysqld     = /usr/local/mysql/bin/mysqld_safe
+mysqladmin = /usr/local/mysql/bin/mysqladmin 
+user       = test
+password   = test
+
+
+# The MySQL server
+[mysqld3306]
+port            = 3306
+socket          = /tmp/mysql3306.sock
+pid-file        = /tmp/mysql3306.pid
+skip-external-locking
+key_buffer_size = 16K
+max_allowed_packet = 1M
+table_open_cache = 4
+sort_buffer_size = 64K
+read_buffer_size = 256K
+read_rnd_buffer_size = 256K
+net_buffer_length = 2K
+thread_stack = 128K
+basedir = /usr/local/mysql
+datadir = /usr/local/mysql/data
+server-id       = 1
+
+[mysqld3307]
+port            = 3307
+socket          = /tmp/mysql3307.sock
+pid-file        = /tmp/mysql3307.pid
+skip-external-locking
+key_buffer_size = 16K
+max_allowed_packet = 1M
+table_open_cache = 4
+sort_buffer_size = 64K
+read_buffer_size = 256K
+read_rnd_buffer_size = 256K
+net_buffer_length = 2K
+thread_stack = 128K
+basedir = /usr/local/mysql
+datadir = /usr/local/mysql/data2
+server-id       = 1
+
+[mysqld3308]
+port            = 3308
+socket          = /tmp/mysql3308.sock
+pid-file        = /tmp/mysql3308.pid
+skip-external-locking
+key_buffer_size = 16K
+max_allowed_packet = 1M
+table_open_cache = 4
+sort_buffer_size = 64K
+read_buffer_size = 256K
+read_rnd_buffer_size = 256K
+net_buffer_length = 2K
+thread_stack = 128K
+basedir = /usr/local/mysql
+datadir = /usr/local/mysql/data3
+server-id       = 1
+复制代码
+主要需要注意的几个参数是：[mysqld_multi]，port，socket，pid-file和datadir。
+
+配置好之后，就可以启动了。
+
+复制代码
+[root@ora11g bin]# ./mysqld_multi --defaults-file=../my.cnf start 3306 
+[root@ora11g bin]# ps -ef | grep mysql;
+root     10384     1  1 13:21 pts/2    00:00:00 /bin/sh /usr/local/mysql/bin/mysqld_safe --port=3306 --socket=/tmp/mysql3306.sock --pid-file=/tmp/mysql3306.pid --skip-external-locking --key_buffer_size=16K --max_allowed_packet=1M --table_open_cache=4 --sort_buffer_size=64K --read_buffer_size=256K --read_rnd_buffer_size=256K --net_buffer_length=2K --thread_stack=128K --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --server-id=1
+mysql    10665 10384  4 13:21 pts/2    00:00:00 /usr/local/mysql/bin/mysqld --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --plugin-dir=/usr/local/mysql/lib/plugin --user=mysql --skip-external-locking --key-buffer-size=16K --max-allowed-packet=1M --table-open-cache=4 --sort-buffer-size=64K --read-buffer-size=256K --read-rnd-buffer-size=256K --net-buffer-length=2K --thread-stack=128K --server-id=1 --log-error=/usr/local/mysql/data/ora11g.err --pid-file=/tmp/mysql3306.pid --socket=/tmp/mysql3306.sock --port=3306
+root     10684  7661  0 13:21 pts/2    00:00:00 grep mysq
+[root@ora11g bin]# ps -ef | grep mysql
+root     10384     1  0 13:21 pts/2    00:00:00 /bin/sh /usr/local/mysql/bin/mysqld_safe --port=3306 --socket=/tmp/mysql3306.sock --pid-file=/tmp/mysql3306.pid --skip-external-locking --key_buffer_size=16K --max_allowed_packet=1M --table_open_cache=4 --sort_buffer_size=64K --read_buffer_size=256K --read_rnd_buffer_size=256K --net_buffer_length=2K --thread_stack=128K --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --server-id=1
+mysql    10665 10384  2 13:21 pts/2    00:00:00 /usr/local/mysql/bin/mysqld --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --plugin-dir=/usr/local/mysql/lib/plugin --user=mysql --skip-external-locking --key-buffer-size=16K --max-allowed-packet=1M --table-open-cache=4 --sort-buffer-size=64K --read-buffer-size=256K --read-rnd-buffer-size=256K --net-buffer-length=2K --thread-stack=128K --server-id=1 --log-error=/usr/local/mysql/data/ora11g.err --pid-file=/tmp/mysql3306.pid --socket=/tmp/mysql3306.sock --port=3306
+root     10686  7661  0 13:21 pts/2    00:00:00 grep mysql
+[root@ora11g bin]# ./mysqld_multi --defaults-file=../my.cnf start 3307
+[root@ora11g bin]# ./mysqld_multi --defaults-file=../my.cnf start 3308
+[root@ora11g bin]# ps -ef | grep mysql
+root     10384     1  0 13:21 pts/2    00:00:00 /bin/sh /usr/local/mysql/bin/mysqld_safe --port=3306 --socket=/tmp/mysql3306.sock --pid-file=/tmp/mysql3306.pid --skip-external-locking --key_buffer_size=16K --max_allowed_packet=1M --table_open_cache=4 --sort_buffer_size=64K --read_buffer_size=256K --read_rnd_buffer_size=256K --net_buffer_length=2K --thread_stack=128K --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --server-id=1
+mysql    10665 10384  0 13:21 pts/2    00:00:00 /usr/local/mysql/bin/mysqld --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data --plugin-dir=/usr/local/mysql/lib/plugin --user=mysql --skip-external-locking --key-buffer-size=16K --max-allowed-packet=1M --table-open-cache=4 --sort-buffer-size=64K --read-buffer-size=256K --read-rnd-buffer-size=256K --net-buffer-length=2K --thread-stack=128K --server-id=1 --log-error=/usr/local/mysql/data/ora11g.err --pid-file=/tmp/mysql3306.pid --socket=/tmp/mysql3306.sock --port=3306
+root     10695     1  1 13:21 pts/2    00:00:00 /bin/sh /usr/local/mysql/bin/mysqld_safe --port=3307 --socket=/tmp/mysql3307.sock --pid-file=/tmp/mysql3307.pid --skip-external-locking --key_buffer_size=16K --max_allowed_packet=1M --table_open_cache=4 --sort_buffer_size=64K --read_buffer_size=256K --read_rnd_buffer_size=256K --net_buffer_length=2K --thread_stack=128K --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data2 --server-id=1
+mysql    10978 10695  7 13:21 pts/2    00:00:00 /usr/local/mysql/bin/mysqld --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data2 --plugin-dir=/usr/local/mysql/lib/plugin --user=mysql --skip-external-locking --key-buffer-size=16K --max-allowed-packet=1M --table-open-cache=4 --sort-buffer-size=64K --read-buffer-size=256K --read-rnd-buffer-size=256K --net-buffer-length=2K --thread-stack=128K --server-id=1 --log-error=/usr/local/mysql/data2/ora11g.err --pid-file=/tmp/mysql3307.pid --socket=/tmp/mysql3307.sock --port=3307
+root     11003     1  1 13:21 pts/2    00:00:00 /bin/sh /usr/local/mysql/bin/mysqld_safe --port=3308 --socket=/tmp/mysql3308.sock --pid-file=/tmp/mysql3308.pid --skip-external-locking --key_buffer_size=16K --max_allowed_packet=1M --table_open_cache=4 --sort_buffer_size=64K --read_buffer_size=256K --read_rnd_buffer_size=256K --net_buffer_length=2K --thread_stack=128K --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data3 --server-id=1
+mysql    11286 11003 15 13:21 pts/2    00:00:00 /usr/local/mysql/bin/mysqld --basedir=/usr/local/mysql --datadir=/usr/local/mysql/data3 --plugin-dir=/usr/local/mysql/lib/plugin --user=mysql --skip-external-locking --key-buffer-size=16K --max-allowed-packet=1M --table-open-cache=4 --sort-buffer-size=64K --read-buffer-size=256K --read-rnd-buffer-size=256K --net-buffer-length=2K --thread-stack=128K --server-id=1 --log-error=/usr/local/mysql/data3/ora11g.err --pid-file=/tmp/mysql3308.pid --socket=/tmp/mysql3308.sock --port=3308
+root     11305  7661  0 13:21 pts/2    00:00:00 grep mysql
+[root@ora11g bin]# 
+复制代码
+中间有一个小插曲，因为我在安装mysql的时候，cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/usr/local/mysql/data -DSYSCONFDIR=/etc\ ，当时制定的DMYSQL_DATADIR为mysqldata，所以在启动的时候，会报错：
+
+复制代码
+[root@ora11g share]# more mysqld_multi.log 
+mysqld_multi log file version 2.16; run: Fri Mar 28 12:58:30 2014
+
+Starting MySQL servers
+
+140328 12:58:30 [Warning] Can't create test file /usr/local/mysql/mysqldata/ora11g.lower-test
+140328 12:58:30 [Warning] Can't create test file /usr/local/mysql/mysqldata/ora11g.lower-test
+/usr/local/mysql/bin/mysqld: Can't change dir to '/usr/local/mysql/mysqldata/' (Errcode: 2)
+140328 12:58:30 [ERROR] Aborting
+
+140328 12:58:30 [Note] /usr/local/mysql/bin/mysqld: Shutdown complete
+
+mysqld_multi log file version 2.16; run: Fri Mar 28 12:59:07 2014
+
+Starting MySQL servers
+
+140328 12:59:07 [Warning] Can't create test file /usr/local/mysql/mysqldata/ora11g.lower-test
+140328 12:59:07 [Warning] Can't create test file /usr/local/mysql/mysqldata/ora11g.lower-test
+/usr/local/mysql/bin/mysqld: Can't change dir to '/usr/local/mysql/mysqldata/' (Errcode: 2)
+140328 12:59:07 [ERROR] Aborting
+复制代码
+只需要把mysql_safe里面相应的data的目录从mysqldata改为data就可以正常启动了。
+
+复制代码
+# Next try where the source installs put it
+elif test -d $MY_BASEDIR_VERSION/var/mysql
+then
+  DATADIR=$MY_BASEDIR_VERSION/var
+# Or just give up and use our compiled-in default
+else
+  DATADIR=/usr/local/mysql/data
+fi
+复制代码
+ 
+
+再进数据库查看：
+
+复制代码
+[root@ora11g bin]# cd /tmp
+[root@ora11g tmp]# ls
+keyring-HcV70B  mysql3306.pid   mysql3307.pid   mysql3308.pid   scim-panel-socket:0-root  vmware-root
+mapping-root    mysql3306.sock  mysql3307.sock  mysql3308.sock  ssh-WENobU7545
+[root@ora11g tmp]# ll
+total 24
+drwx------ 2 root  root  4096 Sep 26  2013 keyring-HcV70B
+srwxr-xr-x 1 root  root     0 Sep 26  2013 mapping-root
+-rw-rw---- 1 mysql mysql    6 Mar 28 13:21 mysql3306.pid
+srwxrwxrwx 1 mysql mysql    0 Mar 28 13:21 mysql3306.sock
+-rw-rw---- 1 mysql mysql    6 Mar 28 13:21 mysql3307.pid
+srwxrwxrwx 1 mysql mysql    0 Mar 28 13:21 mysql3307.sock
+-rw-rw---- 1 mysql mysql    6 Mar 28 13:21 mysql3308.pid
+srwxrwxrwx 1 mysql mysql    0 Mar 28 13:21 mysql3308.sock
+srw------- 1 root  root     0 Nov 15  2012 scim-panel-socket:0-root
+drwx------ 2 root  root  4096 Mar 28 09:57 ssh-WENobU7545
+drwx------ 2 root  root  4096 Mar 27 17:03 vmware-root
+[root@ora11g tmp]# mysql -S mysql3306.sock 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1
+Server version: 5.5.37 Source distribution
+
+Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
++--------------------+
+4 rows in set (0.00 sec)
+
+mysql> exit
+Bye
+[root@ora11g tmp]# mysql -S mysql3308.sock  
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 1
+Server version: 5.5.37 Source distribution
+
+Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| test               |
++--------------------+
+4 rows in set (0.00 sec)
+
+mysql> exit
+Bye
+[root@ora11g tmp]# 
+复制代码
+ 
+
+ 当想使用stop来关闭的时候：
+
+[root@ora11g mysql]# mysqld_multi --defaults-file=my.cnf stop 3306
+
+发现log里面报错：
+
+mysqld_multi log file version 2.16; run: Fri Mar 28 13:42:17 2014
+
+Stopping MySQL servers
+
+/usr/local/mysql/bin/mysqladmin: connect to server at 'localhost' failed
+error: 'Access denied for user 'test'@'localhost' (using password: YES)'
+
+原来是相应的数据库里面还没有这个用户以及相应的权限。
+
+去数据库中创建用户并授权：
+
+复制代码
+[root@ora11g tmp]# ls -lrt
+total 24
+srw------- 1 root  root     0 Nov 15  2012 scim-panel-socket:0-root
+drwx------ 2 root  root  4096 Sep 26  2013 keyring-HcV70B
+srwxr-xr-x 1 root  root     0 Sep 26  2013 mapping-root
+drwx------ 2 root  root  4096 Mar 27 17:03 vmware-root
+drwx------ 2 root  root  4096 Mar 28 09:57 ssh-WENobU7545
+srwxrwxrwx 1 mysql mysql    0 Mar 28 13:21 mysql3306.sock
+-rw-rw---- 1 mysql mysql    6 Mar 28 13:21 mysql3306.pid
+srwxrwxrwx 1 mysql mysql    0 Mar 28 13:21 mysql3307.sock
+-rw-rw---- 1 mysql mysql    6 Mar 28 13:21 mysql3307.pid
+srwxrwxrwx 1 mysql mysql    0 Mar 28 13:21 mysql3308.sock
+-rw-rw---- 1 mysql mysql    6 Mar 28 13:21 mysql3308.pid
+[root@ora11g tmp]# mysql -S mysql3306.sock
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 3
+Server version: 5.5.37 Source distribution
+
+Copyright (c) 2000, 2014, Oracle and/or its affiliates. All rights reserved.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> grant shutdown on *.* to test@localhost identified by 'test' with grant option;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> show grants for test@localhost;
++---------------------------------------------------------------+
+| Grants for test@localhost                                     |
++---------------------------------------------------------------+
+| GRANT SHUTDOWN ON *.* TO 'test'@'localhost' WITH GRANT OPTION |
++---------------------------------------------------------------+
+1 row in set (0.01 sec)
+
+mysql> 
+复制代码
+创建完毕后，再去停数据库：
+
+[root@ora11g mysql]# mysqld_multi --defaults-file=my.cnf stop 3306-3308
+[root@ora11g mysql]# ps -ef | grep 3306
+root 11551 7661 0 13:49 pts/2 00:00:00 mysql -S mysql3306.sock
+root 11583 7547 0 13:51 pts/1 00:00:00 grep 3306
+
+可以在日志中发现已经能正常的进行关闭了。
+Stopping MySQL servers
+
+140328 13:50:53 mysqld_safe mysqld from pid file /tmp/mysql3306.pid ended
+
+ 相应的，在tmp目录下面的socket文件也会相应的删除了。
+
+
+140328 13:50:55 mysqld_safe mysqld from pid file /tmp/mysql3307.pid ended
+mysqld_multi log file version 2.16; run: Fri Mar 28 13:50:56 2014
+
+Stopping MySQL servers
+
+140328 13:50:57 mysqld_safe mysqld from pid file /tmp/mysql3308.pid ended

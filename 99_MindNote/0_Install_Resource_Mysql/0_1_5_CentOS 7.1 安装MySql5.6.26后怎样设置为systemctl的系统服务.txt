@@ -1,0 +1,169 @@
+http://www.2cto.com/database/201307/229293.html
+
+关键点：
+1.
+#cp mysql.server /etc/rc.d/init.d/mysqld
+#chmod +x /etc/rc.d/init.d/mysqld
+至此，mysql就成功注册为服务了，可以使用 #service mysqld start|stop|restrat 命令来运行mysql了。
+ 
+在CentOS 7.1下，直接执行下面的命令：
+
+systemctl start mysqld.service
+
+不能执行，参考下面的方法解决
+
+
+fedora 16 yum安装mysql后怎样启动，以及添加为系统服务
+
+
+1 yum 安装mysql
+ 
+#yum install mysql mysql-server mysql-devel
+ 
+如果遇到 ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var
+ 
+可以使用下面的命令：
+ 
+启动mysql服务
+#systemctl start mysqld.service
+ 
+设置mysqld为开机自启动
+#systemctl enable mysqld.service
+ 
+2、systemctl的用法
+     该命令为系统进程管理命令; 对比表，以apache / httpd 为例
+ 
+任务  旧指令  新指令
+使某服务自动启动  chkconfig --level 3 httpd on  systemctl enable httpd.service
+使某服务不自动启动  chkconfig --level 3 httpd off  systemctl disable httpd.service
+检查服务状态  service httpd status  systemctl status httpd.service（服务详细信息） systemctl is-active httpd.service （仅显示是否 Active)
+显示所有已启动的服务  chkconfig --list  systemctl list-units --type=service
+启动某服务  service httpd start  systemctl start httpd.service
+停止某服务  service httpd stop  systemctl stop httpd.service
+重启某服务  service httpd restart  systemctl restart httpd.service
+ 
+3、 安装后可以这样查看mysql的相应命令的安装位置
+ 
+查找mysql服务器文件的安装位置
+#rpm -ql mysql-server
+查找mysql客户端文件的安装位置
+#rpm -ql mysql
+ 
+4、系统默认没有安装mysql管理数据库，运行安装命令
+#mysql_install_db
+或者加上参数
+#mysql_install_db --user=root --basedir=/usr --datadir=/var/lib/mysql
+ 
+安装完mysql管理数据库后，可以启动mysql了，可以这样查看相应的basedir和datadir的值。
+ 
+启动mysql
+#mysqld_safe --user=root &
+ 
+查找mysqld的进程号
+#ps aux|grep mysqld
+ 
+结束mysqld，进程号由上面的命令得到，注意是 /usr/bin/mysqld 的进程号，而不是 /bin/sh /usr/bin/mysqld_safe 的进程号。
+#kill 35431
+ 
+5、下载一个mysql的Linux二进制压缩安装包（版本号差不多就行，比如都是5.5.xx）中的support-files/mysql.server文件，修改其中的两行。
+basedir=/usr
+datadir=/var/lib/mysql
+搜索'start'段，在 $bindir/mysqld_safe --datadir="$datadir" 修改为 $bindir/mysqld_safe --user=root --datadir="$datadir" 。
+然后
+#cp mysql.server /etc/rc.d/init.d/mysqld
+#chmod +x /etc/rc.d/init.d/mysqld
+至此，mysql就成功注册为服务了，可以使用 #service mysqld start|stop|restrat 命令来运行mysql了。
+ 
+启动mysql
+#service mysqld start
+ 
+给mysql的root用户添加密码123
+#mysqladmin -u root password 123
+ 
+使用mysql命令行客户端
+#mysql -u root -p 123
+ 
+6、 启动 mysqld.service 出现无法启动的问题
+ 
+用service mysqld start启动服务时，出现如下错误：
+ 
+Redirecting to /bin/systemctl start mysqld.service
+ 
+Failed to issue method call: Access denied
+ 
+用systemctl start mysql.service时，出现如下错误：
+ 
+Failed to issue method call: Unit mysql.service failed to load: No such file or directory. See system logs and 'systemctl status mysql.service' for details.
+ 
+直接输入mysql出现如下错误：
+ 
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/var/lib/mysql/mysql.sock' (2)
+ 
+解决方法：mysql的拥有者是root,而mysql是用mysql用户身份执行当然写不进去了，是系统权限的问题，chown -R mysql:mysql /var/lib/mysql/ 就可以了
+
+
+
+对于多实例的情况
+
+1.直接命令格式
+ mysqld_multi --defaults-file=/usr/local/mysql/my-multi.cnf start
+
+mysqld_multi --defaults-file=/usr/local/mysql/my-multi.cnf start 3307-3311
+mysqld_multi --defaults-file=/usr/local/mysql/my-multi.cnf start 3307
+
+mysqld_multi --defaults-file=/usr/local/mysql/my-multi.cnf stop 3311
+
+from http://www.cnblogs.com/super-d2/p/3852192.html
+mysql_multi方式配置Mysql数据库主从
+（2）启动数据库实例
+
+mysqld_multi --defaults-extra-file=/usr/local/mysql/my-multi.cnf start #启动
+
+mysqld_multi --defaults-extra-file=/usr/local/mysql/my-multi.cnf stop #关闭
+
+mysqld_multi --defaults-extra-file=/usr/local/mysql/my-multi.cnf report #查看状态
+
+
+2.设置为服务的形式：
+
+a.更改 mysqld_multi.server：
+
+ 17 basedir=/usr/local/mysql
+ 18 bindir=/usr/local/mysql/bin
+ 19
+ 20 if test -x $bindir/mysqld_multi
+ 21 then
+ 22   mysqld_multi="$bindir/mysqld_multi";
+ 23 else
+ 24   echo "Can't execute $bindir/mysqld_multi from dir $basedir";
+ 25   exit;
+ 26 fi
+ 27
+ 28 case "$1" in
+ 29     'start' )
+ 30         "$mysqld_multi" --defaults-file=/usr/local/mysql/my-multi.cnf start $2
+ 31         ;;
+ 32     'stop' )
+ 33         "$mysqld_multi" stop $2
+ 34         ;;
+ 35     'report' )
+ 36         "$mysqld_multi" --defaults-file=/usr/local/mysql/my-multi.cnf report $2
+ 37         ;;
+ 38     'restart' )
+ 39         "$mysqld_multi" --defaults-file=/usr/local/mysql/my-multi.cnf stop $2
+ 40         "$mysqld_multi" --defaults-file=/usr/local/mysql/my-multi.cnf start $2
+ 41         ;;
+ 42     *)
+ 43         echo "Usage: $0 {start|stop|report|restart}" >&2
+ 44         ;;
+ 45 esac
+
+
+
+
+cp mysqld_multi.server /etc/rc.d/init.d/mysqld_multi
+chmod +x /etc/rc.d/init.d/mysqld_multi
+systemctl start mysqld_multi.service
+
+
+

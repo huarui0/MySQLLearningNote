@@ -1,0 +1,4 @@
+http://linux.chinaitlab.com/MYSQL/914473.html
+
+Mysql如何启动BDB引擎
+

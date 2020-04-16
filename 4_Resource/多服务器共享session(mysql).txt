@@ -1,0 +1,294 @@
+php代码
+<?php    
+/* vim: set expandtab tabstop=4 shiftwidth=4 foldmethod=marker: */   
+//===========================================    
+// 程序：   MySQL-Based session Class    
+// 功能：   基于mysql存储的 Session 功能类    
+// 作者:    yejr    
+// 网站:    http://imysql.cn    
+// 时间:    2007-01-05    
+//===========================================    
+   
+/**   
+ * 类名:    MySQL Session Class   
+ * 功能:    自主实现基于MySQL HEAP表存储的 Session 功能   
+ * 描述:    这个类就是实现Session的功能，基本上是通过设置客户端的Cookie来保存SessionID，   
+ *          然后把用户的数据保存在服务器端，最后通过Cookie中的Session Id来确定一个数据是否是用户的，   
+ *          然后进行相应的数据操作   
+ *   
+ * 注意: 本类调用了PEAR::DB类,如果有自己的DB类,则可以稍微修改一下代码   
+ *   
+ * 备注：数据表初始化SQL语句:   
+ * CREATE TABLE `sessions` (   
+ * `sid` varchar(32) NOT NULL default '',   
+ * `session` longtext,   
+ * `flush_dt` int unsigned NOT NULL default '0',   
+ * PRIMARY KEY  (`sid`),   
+ * KEY `last` (`flush_dt`)   
+ * ) ENGINE=HEAP;   
+ */   
+   
+//设定 SESSION 有效时间，单位是 秒    
+define('SESS_LIFTTIME', 3600);    
+define('DB_DSN', 'mysql://root:@localhost/test');    
+define('DB_NAME','test');    
+   
+require_once('DB.php');    
+   
+$gDb    = new DB;    
+$gDb    = DB::connect(DB_DSN, TRUE);    
+   
+if (PEAR::isError($gDb))    
+{    
+    die($gDb->getMessage());    
+}    
+   
+if (!defined('MySQLSession'))    
+{    
+    define('MySQLSession',    TRUE);    
+   
+class Usess    
+{    
+    static  $mSessSavePath;    
+    static  $mSessName;    
+    static  $mSessMaxTime;    
+    static  $mTblSess   = 'sessions';    
+    static  $mTblSessMap;    
+    static  $mDb;    
+   
+    // {{{ 初始化构造函数    
+    /**   
+     * 构造函数   
+     *   
+     * @param string $login_user    登录用户   
+     * @param int $login_type       用户类型   
+     * @param string $login_sess    登录Session值   
+     * @return Esession   
+     */   
+    public function __construct()    
+    {    
+        self::$mSessMaxTime = SESS_LIFTTIME;    
+   
+        self::$mTblSessMap  = array(    
+                'sid'   => 'sid',    
+                'data'  => 'session',    
+                'last'  => 'flush_dt',    
+                );    
+    }    
+    // }}}    
+   
+    /** {{{ sessOpen($pSavePath, $name)   
+     *   
+     * @param   String  $pSavePath   
+     * @param   String  $pSessName   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function sessOpen($pSavePath = '', $pSessName = '')    
+    {    
+        global $gDb;    
+   
+        self::$mDb  = $gDb;    
+        self::$mSessSavePath    = $pSavePath;    
+        self::$mSessName        = $pSessName;    
+   
+        self::sessGc();    
+   
+        return TRUE;    
+    }    
+    // }}}    
+   
+    /** {{{ sessClose()   
+     *   
+     * @param   NULL   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function sessClose()    
+    {    
+        return TRUE;    
+    }    
+    // }}}    
+   
+    /** {{{ sessRead($wSid)   
+     *   
+     * @param   String  $wSid   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function sessRead($wSid = '')    
+    {    
+        global $db;    
+   
+        $wSql    = sprintf("SELECT * FROM `%s`.`%s` WHERE `%s` = '%s';",    
+                        DB_NAME,    
+                        self::$mTblSess,    
+                        self::$mTblSessMap['sid'],    
+                        $wSid   
+                );    
+   
+        //这里一定要用 DB_FETCHMODE_ASSOC,否则取回的数组只能用数字做下标    
+        if (!PEAR::isError($row = self::$mDb->getRow($wSql, null, DB_FETCHMODE_ASSOC)))    
+        {    
+            //session已经存在了    
+            if (is_array($row) && 1 <= count($row))    
+            {    
+                return $row[self::$mTblSessMap['data']];    
+            }    
+            else   
+            {    
+                $wSql    = sprintf("INSERT INTO `%s`.`%s` VALUES ('%s', '', UNIX_TIMESTAMP(NOW()));",    
+                                DB_NAME,    
+                                self::$mTblSess,    
+                                $wSid   
+                        );    
+   
+                if (!PEAR::isError(self::$mDb->query($wSql)))    
+                {    
+                    return TRUE;    
+                }    
+            }    
+        }    
+   
+        return FALSE;    
+    }    
+    // }}}    
+   
+    /** {{{ sessWrite($wSid, $wData)   
+     *   
+     * @param   String  $wSid   
+     * @param   String  $wData   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function sessWrite($wSid = '', $wData = '')    
+    {    
+        $wData  = mysql_escape_string($wData);    
+   
+        $wSql    = sprintf("UPDATE `%s`.`%s` SET `%s` = '%s', `%s` = UNIX_TIMESTAMP(NOW()) WHERE `%s` = '%s';",    
+                        DB_NAME,    
+                        self::$mTblSess,    
+                        self::$mTblSessMap['data'],    
+                        $wData,    
+                        self::$mTblSessMap['last'],    
+                        self::$mTblSessMap['sid'],    
+                        $wSid   
+                );    
+   
+        if (!PEAR::isError(self::$mDb->query($wSql)))    
+        {    
+            return TRUE;    
+        }    
+   
+        return FALSE;    
+    }    
+    // }}}    
+   
+    /** {{{ sessDestroy($wSid)   
+     *   
+     * @param   String  $wSid   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function sessDestroy($wSid = '')    
+    {    
+        $wSql    = sprintf("DELETE FROM `%s`.`%s` WHERE `%s` = '%s';",    
+                        DB_NAME,    
+                        self::$mTblSess,    
+                        $wSid   
+                );    
+   
+        if (!PEAR::isError(self::$mDb->query($wSql)))    
+        {    
+            return TRUE;    
+        }    
+   
+        return FALSE;    
+    }    
+    // }}}    
+   
+    /** {{{ sessGc()   
+     *   
+     * @param   NULL   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function sessGc()    
+    {    
+        global $db;    
+   
+        //计算出过期时间    
+        $last   = time() - self::$mSessMaxTime;    
+   
+        $wSql    = sprintf("DELETE FROM `%s`.`%s` WHERE `%s` < $last;", DB_NAME, self::$mTblSess, self::$mTblSessMap['last']);    
+   
+        if (!PEAR::isError(self::$mDb->query($wSql)))    
+        {    
+            return TRUE;    
+        }    
+   
+        return FALSE;    
+    }    
+    // }}}    
+   
+    /** {{{ initSess()   
+     *   
+     * @param   NULL   
+     *   
+     * @return  Bool    TRUE/FALSE   
+     */   
+    public function initSess()    
+    {    
+        $domain = '';    
+   
+        //不使用 GET/POST 变量方式    
+        ini_set('session.use_trans_sid',    0);    
+   
+        //设置垃圾回收最大生存时间    
+        ini_set('session.gc_maxlifetime',   SESS_LIFTTIME);    
+   
+        //使用 COOKIE 保存 SESSION ID 的方式    
+        ini_set('session.use_cookies',      1);    
+        ini_set('session.cookie_path',      '/');    
+   
+        //多主机共享保存 SESSION ID 的 COOKIE    
+        ini_set('session.cookie_domain',    $domain);    
+   
+        //将 session.save_handler 设置为 user，而不是默认的 files    
+        session_module_name('user');    
+   
+        //定义 SESSION 各项操作所对应的方法名：    
+        session_set_save_handler(    
+                array('Usess', 'sessOpen'),   //对应于静态方法 My_Sess::open()，下同。    
+                array('Usess', 'sessClose'),    
+                array('Usess', 'sessRead'),    
+                array('Usess', 'sessWrite'),    
+                array('Usess', 'sessDestroy'),    
+                array('Usess', 'sessGc')    
+                );    
+        session_start();    
+   
+        return TRUE;    
+    }    
+    // }}}    
+   
+}//end class    
+   
+}//end define    
+   
+$sess   = new Usess;    
+$sess->initSess();    
+?> 
+
+
+
+
+关注此文的读者还看过：
+·2013-12-3 11:41:00 PHP截取字符串专题
+·2013-12-3 11:40:00 在PHP中如何使用模板
+·2013-12-3 11:39:00 PHP图形验证码程序
+·2013-12-3 11:39:00 PHP与Javascript的两种交互方式
+·2013-12-3 11:38:00 PHP链接ACCESS数据库最简单的方法 
+·2013-12-3 11:37:00 PHP 中的一些经验积累
+
+-

@@ -1,0 +1,40 @@
+mysqlshow
+mysqlshow -u root mysql
+mysqladmin version status proc
+mysqladmin -u root version status proc
+mysql test
+
+
+
+
+mysql> CREATE TABLE pet (name VARCHAR(20), owner VARCHAR(20),
+    -> species VARCHAR(20), sex CHAR(1), birth DATE, death DATE);
+
+mysql> CREATE TABLE event (name VARCHAR(20), date DATE,
+-> type VARCHAR(15), remark VARCHAR(255));
+
+
+CREATE INDEX IDX_XBLOCATION_ID ON XB_LOCATION(id) USING BTREE;
+
+
+unix
+LOAD DATA LOCAL INFILE 'E:/Installs/Oracle/Softwares/Database/MySQL/my_testdata/pet.txt' INTO TABLE pet;
+window
+LOAD DATA LOCAL INFILE 'E:/Installs/Oracle/Softwares/Database/MySQL/my_testdata/pet.txt' INTO TABLE pet LINES TERMINATED BY '\r\n';
+LOAD DATA LOCAL INFILE 'E:/Installs/Oracle/Softwares/Database/MySQL/my_testdata/event.txt' INTO TABLE event LINES TERMINATED BY '\r\n';
+
+SELECT pet.name,
+(YEAR(date)-YEAR(birth)) - (RIGHT(date,5)<RIGHT(birth,5)) AS age,
+remark
+FROM pet INNER JOIN event
+ON pet.name = event.name
+WHERE event.type = 'litter';
++--------+------+-----------------------------+
+在命令行下执行
+mysql -h localhost -u root -p < E:\Installs\Oracle\Softwares\Database\MySQL\my_script\sqlscript_test.sql
+mysql -h localhost -u root -p menagerie < E:\Installs\Oracle\Softwares\Database\MySQL\my_script\sqlscript_test.sql
+
+
+在mysql>下执行
+source E:/Installs/Oracle/Softwares/Database/MySQL/sqlscript_test.sql;
+\. E:/Installs/Oracle/Softwares/Database/MySQL/sqlscript_test.sql

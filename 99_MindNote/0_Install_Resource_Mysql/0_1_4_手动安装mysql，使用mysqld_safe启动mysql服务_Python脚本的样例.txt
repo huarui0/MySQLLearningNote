@@ -1,0 +1,108 @@
+http://san-yun.iteye.com/blog/1493931
+
+手动安装mysql，使用mysqld_safe启动mysql服务
+
+
+
+之前用过dpkg  或者rpm安装mysql,本文使用tar.gz的方式手动安装mysql
+ 
+安装之前需要先 apt-get install libaio-dev #安装mysql需要
+ 
+1.去官方下载mysql.tar.gz
+http://www.mysql.com/downloads/mysql/
+ 
+2. 解压 tar -xvf mysql.tar.gz
+ 我解压后的目录：/duitang/dist/sys/mysql
+ 
+3.使用提供的script安装
+cd script
+./mysql_install_db --user=yunpeng  --basedir=/usr/local/mysql  --datadir=/duitang/data/mysql
+ 
+4. 启动
+cd ../bin
+./mysqld_safe  --user=yunpeng --basedir=/duitang/dist/sys/mysql  --datadir=/duitang/data/mysql &
+ 
+mysqld_safe --defaults-file=/duitang/dist/conf/mysql/my.cnf
+ 
+ 
+注意datadir必须要指定，不然启动会报错：
+[ERROR] Fatal error: Can't open and lock privilege tables: Table 'mysql.host' doesn't exis
+ 
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+错误：
+安装的时候遇到这个错误：
+/usr/local/mysql3306/bin/mysqld: error while loading shared libraries: libaio.so.1: cannot open shared object file: No such file or directory
+需要安装 sudo apt-get install libaio-dev
+ 
+ 
+ 
+修改默认密码
+mysqladmin -u root -p password 'newpassword'
+ 
+关闭mysql服务
+yunpeng@yunpeng-duitang:/usr/local/mysql/bin$ mysqladmin shutdown
+mysqladmin: shutdown failed; error: 'Access denied; you need (at least one of) the SHUTDOWN privilege(s) for this operation'
+ 
+注意必须指定user
+yunpeng@yunpeng-duitang:/usr/local/mysql/bin$ mysqladmin shutdown -u root -p
+ 
+写了一个脚本启动
+Python代码  收藏代码
+#!/bin/sh  
+  
+mysql_port=3306  
+mysql_username="root"  
+mysql_password=""  
+  
+function_start_mysql()  
+{  
+    printf "Starting MySQL...\n"  
+    /bin/sh /usr/local/webserver/mysql/bin/mysqld_safe --defaults-file=/data1/mysql/${mysql_port}/my.cnf 2>&1 > /dev/null &  
+}  
+  
+function_stop_mysql()  
+{  
+    printf "Stoping MySQL...\n"  
+    /usr/local/webserver/mysql/bin/mysqladmin -u ${mysql_username} -p${mysql_password} -h 127.0.0.1 -S /tmp/mysql.sock shutdown  
+}  
+  
+function_restart_mysql()  
+{  
+    printf "Restarting MySQL...\n"  
+    function_stop_mysql  
+    sleep 5  
+    function_start_mysql  
+}  
+  
+function_kill_mysql()  
+{  
+    kill -9 $(ps -ef | grep 'bin/mysqld_safe' | grep ${mysql_port} | awk '{printf $2}')  
+    kill -9 $(ps -ef | grep 'libexec/mysqld' | grep ${mysql_port} | awk '{printf $2}')  
+}  
+  
+if [ "$1" = "start" ]; then  
+    function_start_mysql  
+elif [ "$1" = "stop" ]; then  
+    function_stop_mysql  
+elif [ "$1" = "restart" ]; then  
+function_restart_mysql  
+elif [ "$1" = "kill" ]; then  
+function_kill_mysql  
+else  
+    printf "Usage: /data1/mysql/${mysql_port}/mysql {star|stop|restart|kill}\n"  
+fi  
+ 
+ 
+-------------------------------------------------------------------------------------------------------------------------------------------------
+什么是mysqld_safe？
+　在Unix和NetWare中推荐使用mysqld_safe来启动mysqld服务器。mysqld_safe增加了一些安全特性，例如当出现错误时重启服务器并向错误日志文件写入运行时间信息。本节后面列出了NetWare的特定行为。
+ 
+2./tmp/mysql.sock文件的作用是什么?
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
+这个文件是用于socket连接的文件。 
+也就是只有你的守护进程启动起来这个文件才存在。 
+但是你的mysql程序（这个程序是客户端，服务器端时mysqld）可以选择是否使用mysql.sock文件来连接（因为这个方法只适合在Unix主 机上面连接本地的mysqld），对于非本地的任何类型的主机。这些在MySQL的手册（包括晏子翻译的中文版本，覆盖3.23/4.0版本）都有说明。 只要看看就可以明白。 
+ 
+3./etc/my.cnf
+这个文件可以从/usr/local/mysql/support-files/copy过来。
+ln -s /usr/local/mysql/support-files/my-smal.cnf /etc/my.cnf

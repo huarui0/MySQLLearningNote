@@ -1,0 +1,231 @@
+https://typecodes.com/web/centos7compilemysql.html
+
+
+这是《2015年博客升级记》系列文章的第四篇，主要记录在Linux系统中如何编译安装MySql数据库。
+
+1 创建mysql用户和用户组，并下载MySQL5.7.7 Release Candidate版本
+
+首先创建一个名为mysql且没有登录权限的用户和一个名为mysql的用户组，然后去mysql官网下载MySQL5.7.7rc版本。
+#######新建mysql用户和mysql组
+[root@typecodes ~]# groupadd -r mysql && useradd -r -g mysql -s /bin/false -M mysql 
+
+######从官网或者博客备份地址下载MySQL5.7.7 Release Candidate版本
+[root@typecodes ~]# wget -c http://cdn.mysql.com/Downloads/MySQL-5.7/mysql-5.7.7-rc.tar.gz
+[root@typecodes ~]# wget -c http://git.typecodes.com/libs/mysql/mysql-5.7.7-rc.tar.gz
+[root@typecodes ~]# md5sum mysql-5.7.7-rc.tar.gz        [MD5校验]
+36a96021a93ca236e76f5c90ae19cd44  mysql-5.7.7-rc.tar.gz
+######开始解压MySQL5.7.7
+[root@typecodes ~]# tar -zxf mysql-5.7.7-rc.tar.gz && cd mysql-5.7.7-rc
+######下载gmock：google的c++mock框架，从mysql 5.6开始支持
+[root@typecodes mysql-5.7.7-rc]# wget -c http://git.typecodes.com/libs/ccpp/gmock-1.6.0.zip
+######将其解压到MySQL5.7.7的source_downloads目录下
+[root@typecodes mysql-5.7.7-rc]# unzip gmock-1.6.0.zip -d source_downloads  
+
+ 
+2 下载编译MySQL5.7.7rc时需要的工具
+
+由于从MySQL5.5版本开始弃用了常规的configure编译方法，所以需要下载CMake编译器、Boost库、ncurses库和GNU分析器生成器bison这4种工具。经过自己的测试发现，MySQL5.7.7rc编译时所需要的Boost库只能是boost 1.57.0版本，低于或者高于这个版本的都会编译失败！
+#######CMake编译工具
+[root@typecodes ~]# wget -c http://git.typecodes.com/libs/ccpp/cmake-3.2.1.tar.gz
+[root@typecodes ~]# tar -zxf cmake-3.2.1.tar.gz && cd cmake-3.2.1
+[root@typecodes cmake-3.2.1]# ./configure 
+[root@typecodes cmake-3.2.1]# make && make install  [默认安装路径是/usr/local/bin]
+[root@typecodes cmake-3.2.1]# cmake --version       [查看cmake版本]
+cmake version 3.2.1
+
+CMake suite maintained and supported by Kitware (kitware.com/cmake).
+[root@typecodes cmake-3.2.1]# cd ~ && rm -rf cmake-3.2.1*
+
+#######Ncurses：提供功能键定义(快捷键),屏幕绘制以及基于文本终端的图形互动功能的动态库。
+[root@typecodes ~]# yum -y install ncurses-devel
+
+#######bison：GNU分析器生成器
+[root@typecodes ~]# wget -c http://git.typecodes.com/libs/ccpp/bison-3.0.tar.gz
+[root@typecodes ~]# tar -zxf bison-3.0.tar.gz && cd bison-3.0/ && ./configure
+[root@typecodes bison-3.0]# make && make install
+[root@typecodes bison-3.0]# cd ~ && rm -rf bison-3.0*
+
+#######Boost库：一个开源可移植的C++库，是C++标准化进程的开发引擎之一
+[root@typecodes ~]# wget -c http://git.typecodes.com/libs/ccpp/boost_1_57_0.tar.bz2
+[root@typecodes ~]# tar -jxf boost_1_57_0.tar.bz2 && cd boost_1_57_0/
+[root@typecodes boost_1_57_0]# ./bootstrap.sh
+[root@typecodes boost_1_57_0]# ./b2 stage threading=multi link=shared
+[root@typecodes boost_1_57_0]# ./b2 install threading=multi link=shared
+[root@typecodes boost_1_57_0]# cd ~ && rm -rf boost_1_57_0*
+
+
+3 开始进行MySQL5.7.7rc编译前的配置
+
+准备工作做好后，就开始正式配置MySQL5.7.7rc的安装明细了。注意，操作时一定要先把下面反斜杠“\”后面添加的注释文字去掉！！！
+######使用cmake命令，开始编译MySQL5.7.7rc
+[root@typecodes mysql-5.7.7-rc]# cmake \
+-DCMAKE_INSTALL_PREFIX=/usr/local/mysql  \              [MySQL安装的根目录]
+-DMYSQL_DATADIR=/mydata/mysql/data  \                   [MySQL数据库文件存放目录]
+-DSYSCONFDIR=/etc \                                     [MySQL配置文件所在目录]
+-DMYSQL_USER=mysql \                                    [MySQL用户名]      
+-DWITH_MYISAM_STORAGE_ENGINE=1 \                        [MySQL的数据库引擎]
+-DWITH_INNOBASE_STORAGE_ENGINE=1 \                      [MySQL的数据库引擎]
+-DWITH_ARCHIVE_STORAGE_ENGINE=1 \                       [MySQL的数据库引擎]
+-DWITH_MEMORY_STORAGE_ENGINE=1 \                        [MySQL的数据库引擎]
+-DWITH_READLINE=1 \                                     [MySQL的readline library]
+-DMYSQL_UNIX_ADDR=/var/run/mysql/mysql.sock \           [MySQL的通讯目录]
+-DMYSQL_TCP_PORT=3306 \                                 [MySQL的监听端口]
+-DENABLED_LOCAL_INFILE=1 \                              [启用加载本地数据]
+-DENABLE_DOWNLOADS=1 \                                  [编译时允许自主下载相关文件]
+-DWITH_PARTITION_STORAGE_ENGINE=1  \
+-DEXTRA_CHARSETS=all \                                  [使MySQL支持所有的扩展字符]
+-DDEFAULT_CHARSET=utf8 \                                [设置默认字符集为utf8]
+-DDEFAULT_COLLATION=utf8_general_ci \                   [设置默认字符校对]
+-DWITH_DEBUG=0 \                                        [禁用调试模式]
+-DMYSQL_MAINTAINER_MODE=0 \
+-DWITH_SSL:STRING=bundled \                             [通讯时支持ssl协议]
+-DWITH_ZLIB:STRING=bundled                              [允许使用zlib library]
+
+
+执行上面的配置命令的结果如下图所示：
+
+MySQL5.7.7rc编译前的配置
+
+4 开始编译和安装MySQL5.7.7rc
+
+使用make命令编译时，会比较吃CUP。博主当时购买的阿里主机是单核1G内存，编译到55%左右时直接卡住，同时无法新建一个终端连接，内存或者CPU已经严重耗尽。在重新购买了一个物理数据盘并划分出一个swap交换空间后，最终还是编译成功了，耗时约4个小时。所以，如果主机内存在1G一下并且没有设置Linux交换空间的，不建议直接编译MySQL5.7.7rc！
+[root@typecodes mysql-5.7.7-rc]# make && make install
+
+
+下图展示的是make命令执行完毕的情况：
+
+编译MySQL5.7.7rc的make命令执行结果
+
+编译MySQL5.7.7rc的make命令执行结果
+
+编译MySQL5.7.7rc对CPU和内存消耗比较大，这里截取了两张使用top命令的图片：
+
+编译MySQL5.7.7rc的make命令执行结果
+
+编译MySQL5.7.7rc的make命令执行结果
+
+最后，激动人心的时刻，看到下图就代表已经编译安装好了MySQL5.7.7rc！
+
+安装MySQL5.7.7rc的make install命令执行结果
+
+5 查看编译成功后的MySQL安装目录
+
+使用命令查看MySQL的安装目录/usr/local/mysql/下面是否生成了相关目录文件（最重要的当然是bin、sbin和lib目录）。如果lib目录下面没有生成如图所示的.so动态库文件和.a静态库文件，那么说明安装不成功（即使成功了也可能会导致php进程无法找到mysql的相关库文件）。
+
+初始化MySQL自身的数据库
+
+6 开始设置MySQL的配置文件my.cnf
+
+先把编译生成的my.cnf文件备份，然后把《CentOS系统MySQL的配置文件my.cnf》文中整理的MySQL的配置文件my.cnf上传到服务器的/etc/目录下即可。
+[root@typecodes mysql]# mv /etc/my.cnf /etc/my.cnfbak
+[root@typecodes mysql]# mv  ~/my.cnf  /etc/my.cnf
+
+
+7 添加mysql的环境变量
+
+将MySQL编译生成的bin目录添加到当前Linux系统的环境变量中
+[root@typecodes mysql]# echo -e '\n\nexport PATH=/usr/local/mysql/bin:$PATH\n' >> /etc/profile && source /etc/profile
+
+
+8 创建MySQL数据库文件的存放路径以及相关安全配置
+
+在Linux主机上创建一个目录/mydata/mysql/data，用于存放MySQL的数据库文件。同时设置其用户和用户组为之前创建的mysql，权限为777。这样其它用户是无法进行读写的，尽量保证数据库的安全。
+[root@typecodes ~]# mkdir -p /mydata/mysql/data && chown -R root:mysql /usr/local/mysql
+[root@typecodes mysql]# chown -R mysql:mysql /mydata/mysql/data
+[root@typecodes mysql]# chmod -R go-rwx /mydata/mysql/data
+
+
+9 初始化MySQL自身的数据库
+
+在MySQL安装目录的\bin\路径下，执行mysqld命令，初始化MySQL自身的数据库。
+######参数user表示用户，basedir表示mysql的安装路径，datadir表示数据库文件存放路径
+[root@typecodes bin]# mysqld --initialize-insecure --user=mysql --basedir=/usr/local/mysql --datadir=/mydata/mysql/data
+
+
+执行完后，可以通过[root@typecodes mysql]# ls -lrt /mydata/mysql/data/命令查看是否生成了MySQL自身的数据库文件。
+
+初始化MySQL自身的数据库
+
+10 创建MySQL日志存放目录以及设置开机启动
+
+下面配置的MySQL日志存放目录以及权限都是根据前面my.cnf文件写的，也就是两者需要保持一致。
+[root@typecodes ~]# mkdir -p /var/run/mysql && mkdir -p /var/log/mysql
+[root@typecodes ~]# chown -R mysql:mysql /var/log/mysql && chown -R mysql:mysql /var/run/mysql
+######配置开机自启动
+[root@typecodes mysql]# cp /usr/local/mysql/support-files/mysql.server  /etc/init.d/mysqld
+[root@typecodes mysql]# chmod +x /etc/init.d/mysqld     #增加可执行权限
+[root@typecodes mysql]# chkconfig --add mysql       #添加到sysV服务
+[root@typecodes mysql]# chkconfig mysqld on
+
+
+11 启动MySQL服务
+
+在完成上面的操作后，就可以正式使用MySQL服务了。启动MySQL进程服务的命令如下：
+[root@typecodes mysql]# mysqld_safe --user=mysql --datadir=/mydata/mysql/data --log-error=/var/log/mysql/error.log &        [直接回车]
+[1] 10274
+150513 21:28:16 mysqld_safe Logging to '/var/log/mysql/error.log'.
+150513 21:28:16 mysqld_safe Starting mysqld daemon with databases from /mydata/mysql/data
+
+######上面这条命令会在后台继续执行，所以直接回车并执行下面这条命令
+[root@typecodes mysql]# service mysqld start
+Starting MySQL.[  OK  ]                 [启动成功]
+[root@typecodes mysql]# 
+
+
+然后使用下面这命令ps -ef | grep mysql和netstat -tunpl | grep 3306查看MySQL服务进程和端口监听情况：
+
+查看MySQL服务进程和端口监听情况
+
+12 初始化MySQL数据库的root用户密码
+
+和Oracle数据库一样，MySQL数据库也默认自带了一个root用户（这个和当前Linux主机上的root用户是完全不搭边的），我们在设置好MySQL数据库的安全配置后初始化root用户的密码。配置过程中，一路输入y就行了。这里只说明下MySQL5.7.7rc版本中，用户密码策略分成低级LOW、中等MEDIUM和超强STRONG三种，推荐使用中等MEDIUM级别！
+[root@typecodes mysql]# mysql_secure_installation
+............省略前面的过程............
+Press y|Y for Yes, any other key for No: y   【需要修改密码，所以输入y】
+
+There are three levels of password validation policy:
+
+LOW    Length >= 8     【只需要长度大于或等于8】
+MEDIUM Length >= 8, numeric, mixed case, and special characters   【还需要包含数字、大小写和类似于@#%等特殊字符】
+STRONG Length >= 8, numeric, mixed case, special characters and dictionary                  file    【还需要包含字典文件】
+............省略剩下的过程............
+
+
+13 将MySQL数据库的动态链接库共享至系统链接库
+
+一般MySQL数据库还会被类似于PHP等服务调用，所以我们需要将MySQL编译后的lib库文件添加至当前Linux主机链接库/etc/ld.so.conf.d/下，这样MySQL服务就可以被其它服务调用了。
+[root@typecodes lib]# echo "/usr/local/mysql/lib" > /etc/ld.so.conf.d/mysql.conf
+[root@typecodes lib]# ldconfig          [使生效]
+[root@typecodes lib]# ldconfig -v |grep mysql       [查看效果]
+ldconfig: Can't stat /libx32: No such file or directory
+ldconfig: Path `/usr/lib' given more than once
+ldconfig: Path `/usr/lib64' given more than once
+ldconfig: Can't stat /usr/libx32: No such file or directory
+/usr/lib64/mysql:
+        libmysqlclient.so.18 -> libmysqlclient.so.18.0.0
+/usr/local/mysql/lib:
+        libmysqlclient.so.20 -> libmysqlclient_r.so.20.0.0
+
+
+14 创建其它MySQL数据库用户
+
+使用MySQL数据库root管理员用户登录MySQL数据库后，可以管理数据库和其他用户了。这里演示创建一个名为typecodes的MySQL用户（密码为@typecodes2014.com）和一个名为typecodes的数据库。
+[root@typecodes mysql]# mysql -uroot -p密码
+
+######登录成功后，创建typecodes数据库，并设置字符集和字符校
+mysql> CREATE DATABASE `typecodes` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+Query OK, 1 row affected (0.00 sec)
+
+######创建名为typecodes用户，并让它拥有typecodes数据库所有的权限
+mysql> grant all privileges on typecodes.* to typecodes@localhost identified by '@typecodes2014.com';
+Query OK, 0 rows affected, 1 warning (0.01 sec)
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> exit;            [创建完毕，root用户退出]
+
+
+15 错误分析
+
+这里特意分析了一些MySQL安装过程中可能出现的错误情况，详见文章《MySQL编译安装时常见错误分析》。

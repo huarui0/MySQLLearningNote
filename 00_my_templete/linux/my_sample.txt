@@ -1,0 +1,13 @@
+[client]
+ character-set-server = utf8
+ port = 3306
+ socket = /data/mysql/3306/mysql.sock
+ [mysqld]
+ character-set-server = utf8
+ user = mysql
+ port = 3306
+ socket = /data/mysql/3306/mysql.sock
+ basedir = /usr/local/webserver/mysql
+ datadir = /data/mysql/3306/data
+ log-error = /data/mysql/3306/mysql_error.log
+ pid-file = /data/mysql/3306/mysql.pid
