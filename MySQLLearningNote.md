@@ -67,10 +67,10 @@
 
             ------mysql 外网登陆。为何要两个啊（实际是转换成映射的电脑登陆），不用第一个的！！！
             ---------------------------------------------------------------------
-            CREATE USER 'root'@'tomcat1.in.3322.org' IDENTIFIED BY 'root123Root';
+            CREATE USER 'root'@'tomcat1.in.3322.org' IDENTIFIED BY '****123****';
             GRANT ALL PRIVILEGES ON *.* TO 'root'@'tomcat1.in.3322.org' WITH GRANT OPTION;
 
-            CREATE USER 'root'@'192.168.0.12' IDENTIFIED BY 'root123';
+            CREATE USER 'root'@'192.168.0.12' IDENTIFIED BY '******';
             GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.168.0.12' WITH GRANT OPTION;
             ---------------------------------------------------------------------
 
@@ -88,7 +88,7 @@
             GRANT ALL PRIVILEGES ON *.* TO 'tool'@'%'
 
 
-            CREATE USER 'gd4g'@'%' IDENTIFIED BY 'gd4g123';
+            CREATE USER 'gd4g'@'%' IDENTIFIED BY '****123';
 
             CREATE USER 'root'@'%' IDENTIFIED BY '!13YXmcq';
 
@@ -97,8 +97,8 @@
             UPDATE mysql.user SET Password = PASSWORD('root123') WHERE User = 'root';
             FLUSH PRIVILEGES;
 
-            CREATE USER 'multi_admin'@'localhost' IDENTIFIED BY 'multi_admin123';
-            grant shutdown on *.* to multi_admin@localhost identified by 'multi_admin123' with grant option;
+            CREATE USER 'multi_admin'@'localhost' IDENTIFIED BY '*****_admin***';
+            grant shutdown on *.* to multi_admin@localhost identified by '*****_admin***' with grant option;
             show grants for 'multi_admin'@'localhost';
 
          
