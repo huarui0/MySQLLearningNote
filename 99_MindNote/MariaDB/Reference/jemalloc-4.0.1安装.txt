@@ -1,0 +1,93 @@
+1378  cd ~
+ 1379  ls
+ 1380  cd rpmbuild
+ 1381  ls
+ 1382  cd SOURCES/
+ 1383  ls
+ 1384  wget http://www.canonware.com/download/jemalloc/jemalloc-4.0.1.tar.bz2
+ 1386  cp /usr/src/jemalloc-4.0.1.tar.bz2 ./
+ 1387  cp /usr/src/jemalloc-3.6.0.tar.bz2 ./
+ 1391  ls -ll
+ 1392  tar -jxvf jemalloc-4.0.1.tar.bz2
+ 1393  ls
+ 1394  cd jemalloc-4.0.1
+ 1395  ls
+ 1396  ./configure
+ 1397  make && make install
+ 1400  echo ‘/usr/local/lib‘ > /etc/ld.so.conf.d/local.conf
+ 1401  vim  /etc/ld.so.conf.d/local.conf
+ 1402  ldconfig
+
+
+echo ‘/usr/lib64‘ > /etc/ld.so.conf.d/local.conf
+
+对于64位的系统，需要：
+
+cp libjemalloc.so.1 ../../lib64 --目标：usr/lib64
+
+否则报错：
+
+[root@db mariadb]# ./scripts/mysql_install_db  --force --defaults-file=/usr/local/mariadb/my.cnf
+Installing MariaDB/MySQL system tables in '/home//mariadb/data' ...
+/usr/local/mariadb/bin/mysqld: error while loading shared libraries: libjemalloc.so.1: cannot open shared object file: No such file or directory
+
+Installation of system tables failed!  Examine the logs in
+/home//mariadb/data for more information.
+
+
+
+
+
+
+参考：
+http://blog.csdn.net/steve1018/article/details/26737277
+ jemalloc
+
+
+项目的线上服务器，在code中大量使用了std::map，发现就存在一个问题，这个map使用后，clear后内存并不能很好的释放，这个主要就是std malloc的问题。可以尝试使用jemalloc和tcmalloc这些三方的malloc库。在目前我项目中，jemalloc的表现最符合需求。
+
+所以我们在apache module中使用jemalloc。这样map在clear的时候可以很好的释放内存，不会造成服务器的内存压力。
+
+以下为apache module如何安装使用jemalloc的sample：
+
+1.jemalloc的下载：
+
+http://www.canonware.com/download/jemalloc/
+
+使用最近版本的jemalloc：
+
+http://www.canonware.com/download/jemalloc/jemalloc-3.5.0.tar.bz2
+
+~$ wget http://www.canonware.com/download/jemalloc/jemalloc-3.5.0.tar.bz2
+
+ 
+
+2.解压下载下来的tar包
+
+~$ tar jxvf jemalloc-3.5.0.tar.bz2
+
+ 
+
+3.安装jemalloc shell：
+
+~$ ./configure --prefix=/usr/local
+
+~$ make
+
+~$ sudo make install
+
+ 
+
+4.apache module使用jemalloc：
+
+在apachectl脚本最前面中加入：
+
+export LD_PRELOAD=/usr/local/lib/libjemalloc.so
+
+
+
+5.检查apache module是否正常引用了jemalloc：
+
+~$ sudo cat/proc/$httpd_pid/maps
+
+

@@ -1,0 +1,2 @@
+PHP API中，MYSQL与MYSQLI的持久连接区别
+http://www.cnxct.com/some-differences-between-mysql-and-mysqli-of-persistent-connection/

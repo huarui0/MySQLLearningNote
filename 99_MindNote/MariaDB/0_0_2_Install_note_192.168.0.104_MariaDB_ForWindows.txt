@@ -1,0 +1,307 @@
+1.download
+
+mariadb-10.1.13-winx64.zip
+
+2.解压到相应目录：
+E:\Softwares\MariaDB\mariadb-10.1.13-winx64
+
+3.
+在E:\Softwares\MariaDB\mariadb-10.1.13-winx64目录下，
+复制 my-medium.ini 并改成 my.ini
+
+4.在my.ini目录中
+
+更改：
+
+port		= 3307
+socket		= /tmp/mariadb_3307.sock
+
+增加：
+
+# set basedir to your installation path
+
+basedir=E:/Softwares/MariaDB/mariadb-10.1.13-winx64
+# set datadir to the location of your data directory
+
+# datadir=D:/MySqlDataDev/data_5.7.12
+datadir=D:/MyMariaDBDataDev/data_10.1.13
+
+
+
+5.
+在D盘建目录：D:\MyMariaDBDataDev\data_10.1.13
+
+6.将 E:\Softwares\MariaDB\mariadb-10.1.13-winx64\data 目录下的文件全部拷到 D:\MyMariaDBDataDev\data_10.1.13目录下
+
+注：6_1.也可以使用insstal_db的方式
+
+7.在E:\Softwares\MariaDB\mariadb-10.1.13-winx64\bin目录下执行：
+mysqld  --defaults-file=my.ini --console
+
+
+问题：
+mysqld --console 出现：
+2016-05-09 15:16:05 3860 [ERROR] Incompatible header in messagefile 'E:\Software
+s\Oracle\Database\MySQL\mysql-5.7.12-winx64\share\english\errmsg.sys'. Probably
+from another version of MariaDB
+
+mysqld  --defaults-file=my.ini --console 增加 --defaults-file=my.ini
+
+
+
+
+E:\Softwares\MariaDB\mariadb-10.1.13-winx64\bin>mysqld  --defaults-file=my.ini --console
+
+8.使用SQLyog即可登陆：hostname：localhost
+		      username：root
+		      password：空
+		          port：3307
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://mariadb.com/kb/en/mariadb/documentation/getting-started/binary-packages/
+MariaDB Binary Packages
+
+https://mariadb.com/kb/en/mariadb/documentation/getting-started/binary-packages/rpm/yum/
+Installing MariaDB with yum
+
+
+
+Here is your custom MariaDB YUM repository entry for CentOS. Copy and paste it into a file under /etc/yum.repos.d/ (we suggest naming the file MariaDB.repo or something similar).
+
+# MariaDB 10.1 CentOS repository list - created 2015-09-25 08:53 UTC
+# http://mariadb.org/mariadb/repositories/
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+After the file is in place, install MariaDB with:
+
+sudo yum install MariaDB-server MariaDB-client
+
+
+
+
+
+https://mariadb.com/kb/en/mariadb/documentation/getting-started/binary-packages/installing-mariadb-binary-tarballs/
+installing-mariadb-binary-tarballs
+
+
+1.download
+
+wget --no-check-certificate "https://downloads.mariadb.com/archives/MariaDB/mariadb-10.1.7/bintar-linux-x86_64/mariadb-10.1.7-linux-x86_64.tar.gz" &
+
+tar zxvf /installs/mariadb/mariadb-10.1.7-linux-glibc_214-x86_64.tar.gz
+tar zxvf /installs/mariadb/mariadb-10.1.7-linux-x86_64.tar.gz
+
+tar zxvf mariadb-10.1.7-linux-x86_64.tar.gz
+
+
+
+mariadb-enterprise
+
+RHEL 6
+wget --no-check-certificate  "https://downloads.mariadb.com/enterprise/5wbb-dxjp/mariadb-enterprise/10.0.20/bintar-linux-rhel6-ppc64/mariadb-enterprise-10.0.20-rhel6-ppc64.tar.gz"
+
+RHEL 7
+wget --no-check-certificate  "https://downloads.mariadb.com/enterprise/5wbb-dxjp/mariadb-enterprise/10.0.20/bintar-linux-rhel7-ppc64/mariadb-enterprise-10.0.20-rhel7-ppc64.tar.gz"
+
+2.tar -zxvf mariadb-enterprise-10.0.20-rhel7-ppc64.tar.gz
+  tar -zxvf mariadb-10.1.7-linux-x86_64.tar.gz
+ https://wanglaiwang:wl0208wl@code.mariadb.com/mariadb-enterprise/10.0/yum/centos7-amd64
+
+3.
+	cd /usr/local
+	ln -s mariadb-enterprise-10.0.20-rhel6-ppc64 mariadb
+	ln -s mariadb-10.1.7-linux-x86_64 mariadb
+
+
+
+4.Create group mariadb and user mariadb and set correct ownerships:
+
+[root@mariadb-near-mysql opt]# groupadd --system mariadb
+[root@mariadb-near-mysql opt]# useradd -c "MariaDB Server" -d /usr/local/mysql -g mariadb --system mariadb
+[root@mariadb-near-mysql opt]# chown -R mariadb:mariadb mariadb-enterprise-10.0.20-linux-ppc64/
+chown -R mariadb:mariadb mariadb
+[root@mariadb-near-mysql opt]# chown -R mariadb:mariadb mariadb-data/
+Create a new my.cnf in /opt/mariadb from support files:
+
+
+
+
+https://mariadb.com/kb/en/mariadb/documentation/getting-started/binary-packages/installing-mariadb-alongside-mysql/
+Installing MariaDB alongside MySQL
+
+
+
+./scripts/mysql_install_db  --force --defaults-file=/usr/local/mariadb/my.cnf
+执行以上脚本前，需要：
+jemalloc-4.0.1.tar.bz2 安装：参阅：./jemalloc-4.0.1安装.txt
+
+
+
+Copy the init.d script from support files in the right location:
+[root@mariadb-near-mysql opt]# cp mariadb/support-files/mysql.server /etc/init.d/mariadb
+[root@mariadb-near-mysql opt]# chmod +x /etc/init.d/mariadb
+
+
+
+Edit /etc/init.d/mariadb replacing mysql with mariadb as below:
+- # Provides: mysql
++ # Provides: mariadb
+- basedir=
++ basedir=/opt/mariadb
+- datadir=
++ datadir=/opt/mariadb-data
+- lock_file_path="$lockdir/mysql"
++ lock_file_path="$lockdir/mariadb"
+
+
+
+
+The trickiest part will be the last changes to this file. You need to tell mariadb to use only one cnf file. In the start section after $bindir/mysqld_safe add --defaults-file=/opt/mariadb-data/my.cnf. Finally the lines should look like:
+
+# Give extra arguments to mysqld with the my.cnf file. This script
+# may be overwritten at next upgrade.
+$bindir/mysqld_safe --defaults-file=/opt/mariadb-data/my.cnf --datadir="$datadir" --pid-file="$mysqld_pid_file_path" $other_args >/dev/null 2>&1 &
+The same change needs to be made to the mysqladmin command below in the wait_for_ready() function so that the mariadb start command can properly listen for the server start. In the wait_for_ready() function, after $bindir/mysqladmin add --defaults-file=/opt/mariadb-data/my.cnf. The lines should look like:
+
+wait_for_ready () {
+[...]
+    if $bindir/mysqladmin --defaults-file=/opt/mariadb-data/my.cnf ping >/dev/null 2>&1; then
+Run mysql_install_db by explicitly giving it the my.cnf file as argument:
+[root@mariadb-near-mysql opt]# cd mariadb
+[root@mariadb-near-mysql mariadb]# scripts/mysql_install_db --defaults-file=/opt/mariadb-data/my.cnf
+
+
+Now you can start MariaDB by
+[root@mariadb-near-mysql opt]# /etc/init.d/mariadb start
+Starting MySQL...                                          [  OK  ]
+
+
+Make MariaDB start at system start:
+[root@mariadb-near-mysql opt]# cd /etc/init.d
+[root@mariadb-near-mysql init.d]# chkconfig --add mariadb 
+[root@mariadb-near-mysql init.d]# chkconfig --levels 3 mariadb on
+
+
+Finally test that you have both instances running:
+[root@mariadb-near-mysql ~]# mysql -u root -p -e "SELECT VERSION();"
++-----------+
+| VERSION() |
++-----------+
+| 5.6.26    |
++-----------+
+[root@mariadb-near-mysql ~]#  mysql -e "SELECT VERSION();" --socket=/tmp/mariadb.sock
++--------------------+
+| VERSION()          |
++--------------------+
+| 10.1.7-MariaDB-log |
++--------------------+
+
+更改密码：
+'/usr/local/mariadb/bin/mysqladmin' -u root password 'root123' --socket=/tmp/mariadb.sock
+'/usr/local/mariadb/bin/mysqladmin' -u root -h db.kernel.longzhi.com password 'root123' --socket=/tmp/mariadb.sock
+
+
+mysql -u root -p --socket=/tmp/mariadb.sock
+
+
+To start mysqld at boot time you have to copy
+support-files/mysql.server to the right place for your system
+
+PLEASE REMEMBER TO SET A PASSWORD FOR THE MariaDB root USER !
+To do so, start the server, then issue the following commands:
+
+'/usr/local/mariadb/bin/mysqladmin' -u root password 'new-password'
+'/usr/local/mariadb/bin/mysqladmin' -u root -h db.kernel.longzhi.com password 'new-password'
+
+Alternatively you can run:
+'/usr/local/mariadb/bin/mysql_secure_installation'
+
+which will also give you the option of removing the test
+databases and anonymous user created by default.  This is
+strongly recommended for production servers.
+
+See the MariaDB Knowledgebase at http://mariadb.com/kb or the
+MySQL manual for more instructions.
+
+You can start the MariaDB daemon with:
+cd '/usr/local/mariadb' ; /usr/local/mariadb/bin/mysqld_safe --datadir='/home/mariadb/data'
+
+You can test the MariaDB daemon with mysql-test-run.pl
+cd '/usr/local/mariadb/mysql-test' ; perl mysql-test-run.pl
+
+
+
+
+需要设置防护墙：
+/sbin/iptables -I INPUT -p tcp --dport 3307 -j ACCEPT
+
+
+
+
+
+1.查询安装信息
+
+ yum repolist all | grep mariaDB
+
+全新安装
+http://dev.mysql.com/doc/mysql-yum-repo-quick-guide/en/
+
+A Quick Guide to Using the MySQL Yum Repository
+
+--更新安装（如有安装了其他第三方mysql）
+http://dev.mysql.com/doc/refman/5.6/en/updating-yum-repo.html
+2.10.1.1 Upgrading MySQL with the MySQL Yum Repository
+
+
+http://dev.mysql.com/doc/refman/5.6/en/linux-installation-yum-repo.html
+2.5.1 Installing MySQL on Linux Using the MySQL Yum Repository
+
+http://dev.mysql.com/doc/refman/5.6/en/replace-third-party-yum.html
+2.5.2 Replacing a Third-Party Distribution of MySQL Using the MySQL Yum Repository
+
+
+
+---===以下：
+1055  sudo yum install mariadb-server
+ 1056  sudo systemctl start mariadb
+ 1057  sudo systemctl enable mariadb
+ 1058  sudo mysql_secure_installation
+
+mysqladmin -u root -p shutdown
+
+
+目录结构：
+Table 2.6 MySQL Installation Layout for Linux RPM Packages from the MySQL Developer Zone
+Directory Contents of Directory
+/usr/bin Client programs and scripts
+/usr/sbin The mysqld server
+/var/lib/mysql Log files, databases
+/usr/share/info MySQL manual in Info format
+/usr/share/man Unix manual pages
+/usr/include/mysql Include (header) files
+/usr/lib/mysql Libraries
+/usr/share/mysql Miscellaneous support files, including error messages,
+character set files, sample configuration files, SQL for
+database installation
+/usr/share/sql-bench Benchmarks

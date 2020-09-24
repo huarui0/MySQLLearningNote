@@ -46,3 +46,11 @@ Thumbs.db
 # Backup files #
 ######################
 *.bak
+
+# XMind file
+*.~$lock
+
+# Folder #
+######################
+**/00_java_ee_sdk/**
+**/98_J2EE培训/**

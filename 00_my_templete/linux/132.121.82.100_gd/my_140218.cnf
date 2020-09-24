@@ -1,0 +1,39 @@
+# For advice on how to change settings please see
+# http://dev.mysql.com/doc/refman/5.6/en/server-configuration-defaults.html
+
+[mysqld]
+default_storage_engine=MYISAM
+character-set-server=utf8
+character-set-client=utf8
+lower_case_table_names=1
+#default-character-set=utf8
+#default-collation=utf8_general_ci
+
+# Remove leading # and set to the amount of RAM for the most important data
+# cache in MySQL. Start at 70% of total RAM for dedicated server, else 10%.
+# innodb_buffer_pool_size = 128M
+
+# Remove leading # to turn on a very important data integrity option: logging
+# changes to the binary log between backups.
+# log_bin
+
+# These are commonly set, remove the # and set as required.
+# basedir = .....
+# datadir = .....
+# port = .....
+# server_id = .....
+# socket = .....
+
+# Remove leading # to set options mainly useful for reporting servers.
+# The server defaults are faster for transactions and fast SELECTs.
+# Adjust sizes as needed, experiment to find the optimal values.
+max_connections=10000
+key_buffer_size=1024M
+max_allowed_packet=256M
+join_buffer_size = 64M
+sort_buffer_size=64M
+read_rnd_buffer_size=64M 
+read_buffer_size=64M
+myisam_sort_buffer_size=64M
+bulk_insert_buffer_size=64M
+#sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES 

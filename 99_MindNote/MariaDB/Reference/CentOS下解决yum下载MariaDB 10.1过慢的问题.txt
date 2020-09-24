@@ -1,0 +1,5 @@
+CentOS下解决yum下载MariaDB 10.1过慢的问题
+https://tinpont.com/2017/fix-yum-download-mariadb-slow/
+
+Mirror Sites for MariaDB
+https://mariadb.com/kb/en/library/mirror-sites-for-mariadb/
